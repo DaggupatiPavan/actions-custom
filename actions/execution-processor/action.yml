@@ -1,0 +1,15 @@
+name: 'Execution Processor'
+description: 'Process and store execution results from command tracking'
+inputs:
+  execution-data:
+    description: 'Execution data JSON from previous step'
+    required: true
+  data-dir:
+    description: 'Directory to store execution data'
+    required: true
+outputs:
+  summary-path:
+    description: 'Path to the generated summary file'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'

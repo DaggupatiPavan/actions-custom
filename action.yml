@@ -1,0 +1,34 @@
+name: 'Execution Tracker Action'
+description: 'Track command execution details, store data, and facilitate inter-action communication'
+inputs:
+  command:
+    description: 'Command to execute'
+    required: true
+  working-directory:
+    description: 'Directory to execute the command in'
+    required: false
+    default: '.'
+  collect-metrics:
+    description: 'Whether to collect system metrics during execution'
+    required: false
+    default: 'true'
+outputs:
+  stdout:
+    description: 'Command standard output'
+  stderr:
+    description: 'Command standard error'
+  status:
+    description: 'Exit status code'
+  start-time:
+    description: 'Execution start time'
+  end-time:
+    description: 'Execution end time'
+  duration:
+    description: 'Execution duration in milliseconds'
+  metrics:
+    description: 'Collected system metrics during execution'
+  execution-data:
+    description: 'JSON string containing all execution data'
+runs:
+  using: 'node16'
+  main: 'dist/index.js'
