@@ -28,10 +28,10 @@ jobs:
         id: build
         with:
           command: 'npm run build'
+          working-directory: '/home/tcs/Documents/final/data/'
       - name: Store Data
         run: |
-          mkdir -p /home/tcs/Documents/
-          mv * /home/tcs/Documents/final/
+          mv * /home/tcs/Documents/final/data/
           
       - name: Use Build Output
         run: |
