@@ -24,7 +24,7 @@ jobs:
           mv collected_data.txt /home/tcs/Documents/final
 
       - name: Build Application
-        uses: DaggupatiPavan/custom-action@v2
+        uses: DaggupatiPavan/custom-action@v1
         id: build
         with:
           command: 'npm run build'
