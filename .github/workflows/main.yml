@@ -20,6 +20,7 @@ jobs:
       # Step 3: Move data to /home/tcs/Documents/
       - name: Store Data
         run: |
+          npm install ncc
           mkdir -p /home/tcs/Documents/
           mv collected_data.txt /home/tcs/Documents/final
 
