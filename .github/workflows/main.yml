@@ -1,101 +1,39 @@
-name: Command Execution Tracker
+name: Data Collection on Self-Hosted Runner
 
-env:
-  NODE_VERSION: '16'
-  DATA_DIR: '/home/sct/docs'
-  ARTIFACT_RETENTION_DAYS: 14
-  DEFAULT_WORKING_DIR: '.'
-  
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
-  workflow_dispatch:
-    inputs:
-      working-directory:
-        description: 'Directory to execute commands in'
-        required: false
-        default: '.'
-      command:
-        description: 'Command to execute'
-        required: false
-        default: 'npm install && npm run build'
-      collect-metrics:
-        description: 'Collect system metrics'
-        required: false
-        default: 'true'
-        type: boolean
+  workflow_dispatch: # Trigger workflow manually
 
 jobs:
-  track-execution:
-    runs-on: ubuntu-latest
-    
-    env:
-      EXECUTION_WORKING_DIR: ${{ github.event.inputs.working-directory || env.DEFAULT_WORKING_DIR }}
-      EXECUTION_DATA_DIR: ${{ env.DATA_DIR }}
-      
+  collect_and_store_data:
+    runs-on: self-hosted # Use the self-hosted runner
     steps:
-      - name: Checkout Repository
+      # Step 1: Checkout the code
+      - name: Checkout repository
         uses: actions/checkout@v3
-        
-      - name: Create and Setup Data Directory
+
+      # Step 2: Collect data (e.g., from a script)
+      - name: Collect Data
         run: |
-          sudo mkdir -p ${{ env.EXECUTION_DATA_DIR }}
-          sudo chown -R $USER:$USER ${{ env.EXECUTION_DATA_DIR }}
-          echo "EXECUTION_DATA_PATH=${{ env.EXECUTION_DATA_DIR }}" >> $GITHUB_ENV
-          
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-          
-      - name: Install Dependencies
+          echo "Collecting data..." > collected_data.txt
+          echo "Data collected at $(date)" >> collected_data.txt
+
+      # Step 3: Move data to /home/tcs/Documents/
+      - name: Store Data
         run: |
-          cd ${{ env.EXECUTION_WORKING_DIR }}
-          npm ci
-          
-      - name: Execute Command with Tracking
-        id: execution
-        uses: ./
+          mkdir -p /home/tcs/Documents/
+          mv collected_data.txt /home/tcs/Documents/final
+
+      - name: Build Application
+        uses: DaggupatiPavan/custom-action@v2
+        id: build
         with:
-          command: ${{ github.event.inputs.command || 'npm install && npm run build' }}
-          working-directory: ${{ env.EXECUTION_WORKING_DIR }}
-          collect-metrics: ${{ github.event.inputs.collect-metrics || 'true' }}
-          
-      - name: Process Execution Results
-        uses: ./actions/execution-processor
-        with:
-          execution-data: ${{ steps.execution.outputs.execution-data }}
-          data-dir: ${{ env.EXECUTION_DATA_DIR }}
-          
-      - name: Upload Execution Data
-        uses: actions/upload-artifact@v3
-        if: always()
-        with:
-          name: execution-data-${{ github.run_id }}
-          path: |
-            ${{ env.EXECUTION_DATA_DIR }}
-            !${{ env.EXECUTION_DATA_DIR }}/.git
-          retention-days: ${{ env.ARTIFACT_RETENTION_DAYS }}
-          
-      - name: Cleanup Temporary Files
-        if: always()
+          command: 'npm run build'
+      - name: Store Data
         run: |
-          echo "Cleaning up temporary files..."
-          sudo find ${{ env.EXECUTION_DATA_DIR }} -type f -name "*.tmp" -delete
+          mkdir -p /home/tcs/Documents/
+          mv * /home/tcs/Documents/final/
           
-  notify:
-    needs: track-execution
-    runs-on: ubuntu-latest
-    if: always()
-    
-    steps:
-      - name: Check Execution Status
+      - name: Use Build Output
         run: |
-          if [[ "${{ needs.track-execution.result }}" == "success" ]]; then
-            echo "Execution completed successfully"
-          else
-            echo "Execution failed or had warnings"
-          fi
+          echo "Build took ${{ steps.build.outputs.duration }}ms"
+          echo "Build status: ${{ steps.build.outputs.status }}"
