@@ -11,27 +11,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # Step 2: Collect data (e.g., from a script)
-      - name: Collect Data
-        run: |
-          echo "Collecting data..." > collected_data.txt
-          echo "Data collected at $(date)" >> collected_data.txt
-
-      # Step 3: Move data to /home/tcs/Documents/
-      - name: Store Data
-        run: |
-          npm install ncc
-          mkdir -p /home/tcs/Documents/
-          mv collected_data.txt /home/tcs/Documents/final
-
       - name: Build Application
         uses: DaggupatiPavan/custom-action@v1
         id: build
         with:
           command: 'npm run build'
-      - name: Store Data
-        run: |
-          mv .github/execution-data /home/tcs/Documents/final/data/
           
       - name: Use Build Output
         run: |
